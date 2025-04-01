@@ -33,7 +33,7 @@
 import { ref, onMounted, onUnmounted } from "vue"
 import heroSprite from "@/assets/sprites/hero.png"
 import shadow from "@/assets/sprites/shadow.png"
-import bg from "@/assets/sprites/bg.jpg"
+import bg from "@/assets/sprites/bg.webp"
 
 const hero = ref(null)
 const position = ref({ x: 500, y: 500 })
