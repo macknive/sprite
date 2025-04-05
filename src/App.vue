@@ -40,62 +40,79 @@ const position = ref({ x: 500, y: 500 })
 const frame = ref(0)
 const direction = ref(0)
 
-const speed = 10
+const speed = 2
 const spriteWidth = 32
 const spriteHeight = 32
 const totalFrames = 3
 
-let moving = false
+let keysPressed = new Set()
 let animationFrame
 
-const moveHero = (e) => {
-  if (moving) return // Prevent duplicate calls
-  moving = true
+let lastFrameTime = 0
+const frameDelay = 100
 
-  switch (e.key) {
-    case "ArrowUp":
-      direction.value = 2 // Third row (Up)
-      position.value.y -= speed
-      break
-    case "ArrowDown":
-      direction.value = 0 // First row (Down)
-      position.value.y += speed
-      break
-    case "ArrowLeft":
-      direction.value = 3 // Second row (Left)
-      position.value.x -= speed
-      break
-    case "ArrowRight":
-      direction.value = 1 // Fourth row (Right)
-      position.value.x += speed
-      break
-    default:
-      moving = false
-      return
+const moveHero = (timestamp = 0) => {
+  let dx = 0
+  let dy = 0
+
+  // Movement logic
+  if (keysPressed.has("ArrowUp")) dy -= speed
+  if (keysPressed.has("ArrowDown")) dy += speed
+  if (keysPressed.has("ArrowLeft")) dx -= speed
+  if (keysPressed.has("ArrowRight")) dx += speed
+
+  if (dx === 0 && dy === 0) return // no movement
+
+  // Update position
+  position.value.x += dx
+  position.value.y += dy
+
+  // Set direction for animation (you can refine this logic)
+  if (dx !== 0) {
+    // Any left or right input overrides vertical
+    direction.value = dx < 0 ? 3 : 1
+  } else if (dy !== 0) {
+    // Only vertical if no horizontal input
+    direction.value = dy < 0 ? 2 : 0
   }
 
-  // Cycle animation frames
-  frame.value = (frame.value + 1) % totalFrames
+  if (timestamp - lastFrameTime > frameDelay) {
+    frame.value = (frame.value + 1) % totalFrames
+    lastFrameTime = timestamp
+  }
 
-  // Request next animation frame
-  animationFrame = requestAnimationFrame(() => {
-    moving = false
-  })
+  // Keep moving
+  animationFrame = requestAnimationFrame(moveHero)
 }
 
-const stopHero = () => {
-  cancelAnimationFrame(animationFrame)
-  moving = false
+const handleKeyDown = (e) => {
+  keysPressed.add(e.key)
+
+  // Start moving if it's not already
+  if (!animationFrame) {
+    moveHero()
+  }
+}
+
+const handleKeyUp = (e) => {
+  keysPressed.delete(e.key)
+
+  // Stop moving if no keys are held
+  if (keysPressed.size === 0) {
+    cancelAnimationFrame(animationFrame)
+    animationFrame = null
+  }
 }
 
 onMounted(() => {
-  window.addEventListener("keydown", moveHero)
-  window.addEventListener("keyup", stopHero)
+  window.addEventListener("keydown", handleKeyDown)
+  window.addEventListener("keyup", handleKeyUp)
 })
 
 onUnmounted(() => {
-  window.removeEventListener("keydown", moveHero)
-  window.removeEventListener("keyup", stopHero)
+  window.removeEventListener("keydown", handleKeyDown)
+  window.removeEventListener("keyup", handleKeyUp)
+  cancelAnimationFrame(animationFrame)
 })
 </script>
 
