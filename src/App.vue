@@ -159,11 +159,7 @@ onUnmounted(() => {
   top: 30%;
   left: 20%;
 }
-.container {
-  width: 1800px;
-  height: 1200px;
-  position: relative;
-}
+
 .background {
   width: 100%;
   height: 100%;
