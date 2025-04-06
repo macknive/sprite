@@ -7,7 +7,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write # Allow writing to contents (including pushing to gh-pages)
+  pages: write # Allow pushing to gh-pages
+  id-token: write # Required for workflows interacting with GitHub Pages
 
 jobs:
   build-and-deploy:
@@ -20,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 22
+          node-version: 16 # Updated to a valid Node.js LTS version
 
       - name: Install dependencies
         run: npm install
