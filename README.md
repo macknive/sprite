@@ -1,3 +1,4 @@
-# Sprite sample
+# Playground
 
-Moving animation and changing sprites
+Best game
+demo: https://macknive.github.io/sprite/
