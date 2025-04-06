@@ -74,31 +74,53 @@ let animationFrame
 let lastFrameTime = 0
 const frameDelay = 100
 
+let lastKeyPressed = null
+
 const moveHero = (timestamp = 0) => {
   let dx = 0
   let dy = 0
 
-  // Movement logic
-  if (keysPressed.has("ArrowUp")) dy -= speed
-  if (keysPressed.has("ArrowDown")) dy += speed
-  if (keysPressed.has("ArrowLeft")) dx -= speed
-  if (keysPressed.has("ArrowRight")) dx += speed
+  // Movement logic: prioritize the last key pressed if held down
+  if (lastKeyPressed === "ArrowUp") dy -= speed
+  if (lastKeyPressed === "ArrowDown") dy += speed
+  if (lastKeyPressed === "ArrowLeft") dx -= speed
+  if (lastKeyPressed === "ArrowRight") dx += speed
 
-  if (dx === 0 && dy === 0) return // no movement
+  if (keysPressed.has("ArrowUp") && keysPressed.has("ArrowLeft")) {
+    dy -= speed
+    dx -= speed
+  } else if (keysPressed.has("ArrowUp") && keysPressed.has("ArrowRight")) {
+    dy -= speed
+    dx += speed
+  } else if (keysPressed.has("ArrowDown") && keysPressed.has("ArrowLeft")) {
+    dy += speed
+    dx -= speed
+  } else if (keysPressed.has("ArrowDown") && keysPressed.has("ArrowRight")) {
+    dy += speed
+    dx += speed
+  }
+
+  if (dx !== 0 && dy !== 0) {
+    const diagonalSpeed = speed / Math.sqrt(2) // Scale by √2 to normalize
+    dx = dx > 0 ? diagonalSpeed : -diagonalSpeed
+    dy = dy > 0 ? diagonalSpeed : -diagonalSpeed
+  }
+
+  // If no movement input, return early
+  if (dx === 0 && dy === 0) return
 
   // Update position
   position.value.x += dx
   position.value.y += dy
 
-  // Set direction for animation (you can refine this logic)
+  // Set direction for animation
   if (dx !== 0) {
-    // Any left or right input overrides vertical
     direction.value = dx < 0 ? 3 : 1
   } else if (dy !== 0) {
-    // Only vertical if no horizontal input
     direction.value = dy < 0 ? 2 : 0
   }
 
+  // Frame update logic
   if (timestamp - lastFrameTime > frameDelay) {
     frame.value = (frame.value + 1) % totalFrames
     lastFrameTime = timestamp
@@ -109,18 +131,30 @@ const moveHero = (timestamp = 0) => {
 }
 
 const handleKeyDown = (e) => {
+  // Add key to the set and update lastKeyPressed
   keysPressed.add(e.key)
+  lastKeyPressed = e.key // Update last key pressed
 
-  // Start moving if it's not already
+  // Start moving if not already moving
   if (!animationFrame) {
     moveHero()
   }
 }
 
 const handleKeyUp = (e) => {
+  // Remove the key from the set
   keysPressed.delete(e.key)
 
-  // Stop moving if no keys are held
+  // If the key released is the last key pressed, check the next available key in the set
+  if (e.key === lastKeyPressed) {
+    // Find the next key in the set to be held down (if any)
+    const nextKey = [...keysPressed].pop() // Get the last key in the set, if any
+
+    // Update lastKeyPressed to the new key, or null if no keys are pressed
+    lastKeyPressed = nextKey || null
+  }
+
+  // Stop movement if no keys are pressed
   if (keysPressed.size === 0) {
     cancelAnimationFrame(animationFrame)
     animationFrame = null
