@@ -7,6 +7,17 @@
       }"
     >
       <div
+        v-if="displayMessage"
+        class="chat"
+        :style="{
+          backgroundImage: `url(${chatBubble})`,
+          left: `${position.x - 30}px`,
+          top: `${position.y - 190}px`,
+        }"
+      >
+        <span class="message">{{ message }}</span>
+      </div>
+      <div
         ref="hero"
         class="character"
         :style="{
@@ -26,6 +37,14 @@
         ></div>
       </div>
     </div>
+    <input
+      type="text"
+      ref="myInput"
+      @keydown.enter="handleEnter"
+      placeholder="Type a
+    message"
+      style="position: absolute; top: 10px; left: 10px; z-index: 3"
+    />
   </div>
 </template>
 
@@ -34,11 +53,15 @@ import { ref, onMounted, onUnmounted } from "vue"
 import heroSprite from "@/assets/sprites/hero.png"
 import shadow from "@/assets/sprites/shadow.png"
 import bg from "@/assets/sprites/bg.webp"
+import chatBubble from "@/assets/sprites/chatbubble.png"
 
 const hero = ref(null)
 const position = ref({ x: 500, y: 500 })
 const frame = ref(0)
 const direction = ref(0)
+const myInput = ref(null)
+const message = ref(null)
+const displayMessage = ref(false)
 
 const speed = 2
 const spriteWidth = 32
@@ -104,6 +127,14 @@ const handleKeyUp = (e) => {
   }
 }
 
+const handleEnter = () => {
+  message.value = myInput.value.value
+  displayMessage.value = true
+  setTimeout(() => {
+    displayMessage.value = false
+  }, 3000)
+}
+
 onMounted(() => {
   window.addEventListener("keydown", handleKeyDown)
   window.addEventListener("keyup", handleKeyUp)
@@ -117,6 +148,22 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.chat {
+  height: 200px;
+  width: 200px;
+  background-size: cover;
+  position: absolute;
+}
+.message {
+  position: absolute;
+  top: 30%;
+  left: 20%;
+}
+.container {
+  width: 1800px;
+  height: 1200px;
+  position: relative;
+}
 .background {
   width: 100%;
   height: 100%;
