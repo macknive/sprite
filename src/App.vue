@@ -104,7 +104,7 @@ const moveHero = (timestamp = 0) => {
     lastFrameTime = timestamp
   }
 
-  // Keep
+  // Keep moving
   animationFrame = requestAnimationFrame(moveHero)
 }
 
